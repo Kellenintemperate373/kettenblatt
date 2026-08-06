@@ -215,6 +215,26 @@ hours. **Resume** restarts navigation on the same route and direction, restores
 what you had already covered so the dimmed line survives, and keeps appending to
 the same trail. **Finish it** files it into history instead.
 
+## Backup
+
+There is no account behind this app, so nothing is synced anywhere and nothing is
+recoverable from a server. **Export backup** in Settings writes a zip of every
+route — names, favourites, turn cues and all — every recorded ride, and your
+settings. A library of ten prepared routes comes to well under a megabyte, small
+enough to mail to yourself.
+
+Offline map packs are deliberately left out. They are the only thing here that
+can be recreated from nothing, and at ~9 MB per route they would be almost the
+entire file.
+
+**Restore** merges: it adds what is missing and never touches a route you already
+have, so running it twice is harmless and importing somebody else's library
+cannot overwrite yours. Settings follow the same rule — they come back on a phone
+still at defaults, and are left alone on one you have already configured.
+
+A restored route claims no offline map, because the backup did not carry one;
+download it again from the preview.
+
 ## Settings
 
 The gear in the route list covers units (kilometres or miles, applied everywhere

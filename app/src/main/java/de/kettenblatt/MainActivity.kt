@@ -39,6 +39,8 @@ import de.kettenblatt.data.Ride
 import de.kettenblatt.data.RideStore
 import de.kettenblatt.data.Route
 import de.kettenblatt.data.RouteMeta
+import de.kettenblatt.data.Backup
+import de.kettenblatt.data.SettingsCodec
 import de.kettenblatt.data.RouteStore
 import de.kettenblatt.prep.PrepStage
 import de.kettenblatt.prep.RoutePreparer
@@ -48,6 +50,7 @@ import de.kettenblatt.prep.TileSource
 import de.kettenblatt.prep.Valhalla
 import de.kettenblatt.ui.PrepState
 import de.kettenblatt.ui.formatBytes
+import de.kettenblatt.ui.plural
 import de.kettenblatt.data.SettingsStore
 import de.kettenblatt.nav.NavigationRepository
 import de.kettenblatt.nav.NavigationService
@@ -300,6 +303,77 @@ private fun App(store: RouteStore, incoming: Uri?, onIncomingHandled: () -> Unit
         }
     }
 
+    var backupStatus by remember { mutableStateOf<String?>(null) }
+
+    val backupExporter = rememberLauncherForActivityResult(
+        ActivityResultContracts.CreateDocument("application/zip")
+    ) { uri ->
+        if (uri != null) {
+            backupStatus = "Writing…"
+            scope.launch {
+                runCatching {
+                    withContext(Dispatchers.IO) {
+                        context.contentResolver.openOutputStream(uri)?.use { out ->
+                            Backup.write(
+                                routesDir = File(context.filesDir, "routes"),
+                                ridesDir = File(context.filesDir, "rides"),
+                                settings = SettingsCodec.encode(settingsStore.current),
+                                nowMs = System.currentTimeMillis(),
+                                out = out,
+                            )
+                        } ?: throw IllegalStateException("Could not open that file for writing")
+                    }
+                }.onSuccess {
+                    backupStatus = "Backed up ${plural(it.routes, "route")} and ${plural(it.rides, "ride")}."
+                }.onFailure { e ->
+                    backupStatus = e.message ?: "Could not write the backup"
+                }
+            }
+        }
+    }
+
+    val backupImporter = rememberLauncherForActivityResult(
+        ActivityResultContracts.OpenDocument()
+    ) { uri ->
+        if (uri != null) {
+            backupStatus = "Restoring…"
+            scope.launch {
+                runCatching {
+                    withContext(Dispatchers.IO) {
+                        context.contentResolver.openInputStream(uri)?.use { input ->
+                            Backup.restore(
+                                input = input,
+                                routesDir = File(context.filesDir, "routes"),
+                                ridesDir = File(context.filesDir, "rides"),
+                                currentSettings = SettingsCodec.encode(settingsStore.current),
+                                applySettings = { values ->
+                                    settingsStore.update { SettingsCodec.decode { k -> values[k] } }
+                                },
+                            )
+                        } ?: throw IllegalStateException("Could not open that file")
+                    }
+                }.onSuccess { summary ->
+                    routes = withContext(Dispatchers.IO) { store.list() }
+                    rides = withContext(Dispatchers.IO) { rideStore.list() }
+                    backupStatus = buildString {
+                        if (summary.addedAnything) {
+                            append("Restored ${plural(summary.routesAdded, "route")}")
+                            append(" and ${plural(summary.ridesAdded, "ride")}.")
+                        } else {
+                            append("Nothing new — everything in that backup is already here.")
+                        }
+                        if (summary.routesSkipped + summary.ridesSkipped > 0 && summary.addedAnything) {
+                            append(" ${plural(summary.routesSkipped + summary.ridesSkipped, "item")} already present.")
+                        }
+                        if (summary.settingsApplied) append(" Settings restored too.")
+                    }
+                }.onFailure { e ->
+                    backupStatus = e.message ?: "Could not read that backup"
+                }
+            }
+        }
+    }
+
     /** Load a route and hand it to the service, off the main thread. */
     fun beginNavigation(meta: RouteMeta, reversed: Boolean) {
         if (busy) return
@@ -382,9 +456,20 @@ private fun App(store: RouteStore, incoming: Uri?, onIncomingHandled: () -> Unit
     if (showSettings) {
         SettingsScreen(
             settings = settings,
+            backupStatus = backupStatus,
             onChange = { settingsStore.update(it) },
+            onExportBackup = {
+                backupStatus = null
+                backupExporter.launch(Backup.suggestedFileName(System.currentTimeMillis()))
+            },
+            onRestoreBackup = {
+                backupStatus = null
+                // Many providers report a zip as octet-stream, so the filter has
+                // to be broad; the manifest check is what actually validates it.
+                backupImporter.launch(arrayOf("application/zip", "*/*"))
+            },
             onReset = { settingsStore.reset() },
-            onBack = { showSettings = false },
+            onBack = { showSettings = false; backupStatus = null },
         )
         return
     }

@@ -15,7 +15,9 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
+import androidx.compose.material3.Button
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SegmentedButton
@@ -42,7 +44,10 @@ import kotlin.math.roundToInt
 @Composable
 fun SettingsScreen(
     settings: Settings,
+    backupStatus: String?,
     onChange: ((Settings) -> Settings) -> Unit,
+    onExportBackup: () -> Unit,
+    onRestoreBackup: () -> Unit,
     onReset: () -> Unit,
     onBack: () -> Unit,
 ) {
@@ -233,6 +238,31 @@ fun SettingsScreen(
                         range = 200f..2_000f,
                         units = settings.units,
                     ) { v -> onChange { it.copy(tileBufferM = v) } }
+                }
+            }
+
+            item {
+                Section("Backup") {
+                    Explanation(
+                        "There is no account behind this app, so a backup is the only way " +
+                            "your routes and rides survive a lost phone. The file holds both, " +
+                            "plus these settings — offline maps are left out, since they can " +
+                            "be downloaded again."
+                    )
+                    Spacer(Modifier.height(12.dp))
+                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                        Button(onClick = onExportBackup) { Text("Export backup…") }
+                        OutlinedButton(onClick = onRestoreBackup) { Text("Restore…") }
+                    }
+                    Spacer(Modifier.height(8.dp))
+                    Explanation(
+                        "Restoring only adds what is missing, so it is safe to run twice and " +
+                            "never overwrites a route you already have."
+                    )
+                    backupStatus?.let {
+                        Spacer(Modifier.height(10.dp))
+                        Text(it, style = MaterialTheme.typography.bodyMedium)
+                    }
                 }
             }
 

@@ -105,3 +105,7 @@ fun maneuverLabel(type: String, street: String?, instruction: String): String = 
 /** Sentence-case a raw OSM surface value: "paved_smooth" -> "Paved smooth". */
 fun surfaceLabel(surface: String): String =
     surface.replace('_', ' ').replaceFirstChar { it.uppercase() }
+
+/** "1 route", "2 routes" — small, but "1 routes" reads like a bug. */
+fun plural(count: Int, singular: String): String =
+    "$count $singular" + if (count == 1) "" else "s"
