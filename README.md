@@ -69,8 +69,8 @@ Import a `.gpx` and the preview offers **Add turn cues**. That sends the track t
 Valhalla, maps the returned maneuvers back onto the original geometry, matches the
 reverse direction too, and rewrites the route in place. On the reference route it
 takes about a second and yields the same 70 turns, 67 reverse cues and 82 surface
-spans that the original desktop pipeline produced — verified by diffing the two
-files before that pipeline was retired.
+spans that the Python pipeline this was ported from produced — verified by
+diffing the two files before that pipeline was retired.
 
 ![Preparing a route on the phone](docs/screens/prepare-on-phone.png)
 
@@ -87,19 +87,11 @@ turns to a moment of bad signal would be strictly worse than doing nothing.
 Which server it asks is a setting. The default is
 [FOSSGIS's public instance](https://valhalla.openstreetmap.de) — whole planet, no
 API key, tileset refreshed daily, fair-use limit of one call a second against the
-four a route costs. Point it at Stadia Maps or your own `docker-compose` by
-changing the URL.
-
-## Setup
-
-Install the app. That is the whole setup.
-
-Matching uses [FOSSGIS's public Valhalla](https://valhalla.openstreetmap.de) by
-default. If you would rather not depend on a shared instance, run your own —
-[the project's Docker image](https://github.com/nilsnolde/docker-valhalla) with a
-[Geofabrik extract](https://download.geofabrik.de/) for your region — and put its
-address in Settings. The app speaks the standard `trace_route` and
-`trace_attributes` API, so any Valhalla will do.
+four a route costs. If you would rather not lean on a shared instance, run your
+own with [the project's Docker image](https://github.com/nilsnolde/docker-valhalla)
+and a [Geofabrik extract](https://download.geofabrik.de/) for your region, then
+put its address in Settings. Kettenblatt speaks the standard `trace_route` and
+`trace_attributes` API, so any Valhalla will do — Stadia Maps included.
 
 ### Why both directions are matched, not flipped
 
@@ -114,21 +106,11 @@ map-matched separately and both cue sets travel in the same bundle — 70 forwar
 and 67 backward on the reference route. Reversing mid-ride swaps them. This is
 why preparing a route costs four requests rather than two.
 
-### Build and install
-
-```sh
-./gradlew :app:assembleDebug
-adb install -r app/build/outputs/apk/debug/app-debug.apk
-```
-
-Kettenblatt appears in the share sheet and as a handler for `.gpx`, `.navi.json`
-and `.mbtiles`, so a route or a map pack can also be shared in from elsewhere.
-
 ## Managing routes
 
-Each card has an overflow menu: **favourite**, **rename**, **add/replace offline
-map** (for a pack built elsewhere), **delete**. Favourites pin to the top of the list, then everything else by
-most recently imported.
+Each card has an overflow menu: **favourite**, **rename**, **replace offline
+map** (for a pack built elsewhere), **delete**. Favourites pin to the top of the
+list, then everything else by most recently imported.
 
 Renaming changes only the display name — the stored file keeps its own, so a
 route never stops opening because you tidied its title. Deleting removes the
@@ -204,8 +186,8 @@ junction always outranks a café.
 
 ![Waypoint chip](docs/screens/waypoint-chip.png)
 
-The same slot warns about **surface changes** from the spans the preprocessing
-step already extracts — *"Compacted — 290 m to go"* — with enough room to pick a
+The same slot warns about **surface changes**, from the spans matching returns
+alongside the cues — *"Compacted — 290 m to go"* — with enough room to pick a
 line or change gear. The preview shows the whole split, and marks ferries.
 
 ### Recording, history and export
@@ -327,10 +309,10 @@ button appears; recentring or switching mode resumes following. Only real finger
 drags count — osmdroid raises scroll events for the app's own centring and
 rotation too, so follow mode is driven from touch instead.
 
-Close mode is allowed **one zoom level beyond** a sideloaded pack's maximum: a
+Close mode is allowed **one zoom level beyond** an offline pack's maximum: a
 single upscale is still readable, and being able to zoom in at a junction is
-worth more than perfect sharpness. Build packs with `--tile-zoom 12-17` to avoid
-even that.
+worth more than perfect sharpness. Raise *Deepest zoom* in Settings before
+downloading to avoid even that.
 
 Course-up uses the bearing of the route **60 m ahead** rather than the current
 segment or GPS course. Segments average 29 m on the reference route, so a
@@ -342,6 +324,16 @@ street labels with it, so heading south they read upside-down. Nothing can fix
 that short of vector tiles. If you would rather have permanently readable labels
 and orient yourself mentally, drop the `pointUp` call in `RouteMapView.kt` and
 navigation mode becomes zoomed-in north-up.
+
+## Building it
+
+```sh
+./gradlew :app:assembleDebug
+adb install -r app/build/outputs/apk/debug/app-debug.apk
+```
+
+Kettenblatt appears in the share sheet and as a handler for `.gpx`, `.navi.json`
+and `.mbtiles`, so a route or a map pack can also be shared in from elsewhere.
 
 ## Tests
 
@@ -376,7 +368,7 @@ pack and rendering from it in **airplane mode**, and preparing a 7,209-point
 recording to exercise trace thinning.
 
 The strongest check: the bundle the phone produced was pulled off the device and
-diffed against the one the desktop pipeline wrote from the same GPX. Identical
+diffed against the one the Python pipeline wrote from the same GPX. Identical
 geometry,
 identical 70 forward and 67 reverse cues down to each instruction string,
 identical 82 surface spans, identical match quality.
@@ -420,18 +412,19 @@ alert of a ride throws `SecurityException` from the location callback and kills
 the app — in the field, at exactly the moment you need it. The alert path now
 treats audio and haptics as best-effort for the same reason.
 
-**Tile packs are built on the desktop, not in the app.** osmdroid's Mapnik source
-carries `FLAG_NO_BULK`, so constructing a `CacheManager` against it throws — the
-library enforcing the OSM Foundation's tile policy. `prep/TilePack.kt` fetches
-from a source that permits caching instead, and writes the MBTiles itself.
+**osmdroid will not bulk-download the default map source.** Mapnik carries
+`FLAG_NO_BULK`, so constructing a `CacheManager` against it throws — the library
+enforcing the OSM Foundation's tile policy, and rightly so. `prep/TilePack.kt`
+therefore does not use `CacheManager` at all: it fetches from a source that
+permits caching and writes the MBTiles itself.
 
 **MBTiles carries no tile-source name**, so `IArchiveFile.getTileSources()` returns
 an empty set and the name has to be supplied in code.
 
 **Zooming past a tile pack's maximum does not fall back to the network.** osmdroid
 upscales the deepest tile it has and the map turns to mush, so navigation zoom is
-clamped to the pack's own `maxzoom`. Packs default to zoom 12–16; build with
-`--tile-zoom 12-17` if you want to navigate closer in offline.
+clamped to the pack's own `maxzoom`. Packs default to zoom 12–16; raise *Deepest
+zoom* in Settings before downloading if you want to navigate closer in offline.
 
 **Out-and-back spurs are genuinely ambiguous.** The reference route detours to a
 waypoint and retraces *identical coordinates* home — indices 223 and 225 are the
