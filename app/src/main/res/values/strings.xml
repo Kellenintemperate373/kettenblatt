@@ -5,7 +5,7 @@
     <string name="routes_title">Routes</string>
     <string name="import_route">Import route</string>
     <string name="no_routes">No routes yet</string>
-    <string name="no_routes_hint">Import a Komoot GPX. Turn cues, street names and an offline map are added here, over wifi.</string>
+    <string name="no_routes_hint">Import a GPX file. Turn cues, street names and an offline map are added here, over wifi.</string>
     <string name="delete">Delete</string>
     <string name="cancel">Cancel</string>
 

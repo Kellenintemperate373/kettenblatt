@@ -479,7 +479,7 @@ private fun EmptyState(modifier: Modifier = Modifier) {
             Text("No routes yet", style = MaterialTheme.typography.titleLarge)
             Spacer(Modifier.height(8.dp))
             Text(
-                "Import a Komoot GPX. Turn cues, street names and an offline " +
+                "Import a GPX file. Turn cues, street names and an offline " +
                     "map are added here, over wifi.",
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,

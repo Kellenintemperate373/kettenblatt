@@ -1,21 +1,31 @@
 # Kettenblatt
 
-Follow Komoot routes on Android, offline.
+Follow GPX routes on Android, offline.
 
 *Kettenblatt* is German for the chainring — the part that turns everything else.
 
-Plan a trip in Komoot, export the GPX, open it on your phone. The app matches it
-against OpenStreetMap over wifi and keeps turn cues, street names, surface and an
-offline map on the device. In the field it shows the line, where you are on it,
-and the next turn with its street name — and buzzes if you leave the route. It
-records the ride as you go, so an interrupted one can be picked up again and a
-finished one exported as GPX. **While riding: no network connection, and no
-sound.**
+Plan a trip in any planner that exports GPX — Komoot, RideWithGPS, Strava,
+Garmin Connect — then open the file on your phone. Kettenblatt matches it
+against OpenStreetMap data downloaded over wifi, so navigation works with no
+signal and no account.
+
+In the field it shows the line, where you are on it, and the next turn with its
+street name — and buzzes if you leave the route. It records the ride as you go,
+so an interrupted one can be picked up again and a finished one exported as GPX.
+**While riding: no network connection, and no sound.**
+
+---
+
+Kettenblatt is an independent open-source project. It is not affiliated with,
+endorsed by, or connected to komoot GmbH, Strava Inc., or any other route
+planner. Komoot is a trademark of komoot GmbH.
+
+---
 
 ```
   PHONE (at home, on wifi)                     PHONE (in the field, offline)
   ────────────────────────                     ────────────────────────────
-  Komoot .gpx ─► import
+  route .gpx ─► import
       │
       ├─► Add turn cues ──► valhalla1.openstreetmap.de
       │                     (trace_route + trace_attributes)
@@ -46,7 +56,7 @@ Map-matching the track against OpenStreetMap fixes that properly. The same route
 yields **70 real turns, each at an actual junction, 81% with a street name**,
 plus surface type, and both Maas ferry crossings identified as such.
 
-The original Komoot geometry stays authoritative for navigation. Map matching
+The original GPX geometry stays authoritative for navigation. Map matching
 only *annotates* it, so a poor match costs street names — never the line you are
 following.
 
