@@ -10,6 +10,7 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.width
@@ -108,6 +109,12 @@ fun RoutePreviewScreen(
                     onClick = onStart,
                     modifier = Modifier
                         .fillMaxWidth()
+                        // The app draws edge to edge, so with three-button
+                        // navigation the bar sits on top of this button and
+                        // takes the taps meant for it. Inset the button, not the
+                        // Surface, so the panel still paints behind the bar
+                        // rather than leaving a strip of map showing through.
+                        .navigationBarsPadding()
                         .padding(16.dp)
                         .height(56.dp),
                 ) {
