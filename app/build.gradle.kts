@@ -1,3 +1,31 @@
+import java.util.Properties
+
+/**
+ * Signing material, from the environment in CI or a local keystore.properties
+ * that is never committed. With neither, a release build is simply unsigned, so
+ * anyone can clone and assemble one without holding the key.
+ */
+val keystoreProperties = Properties().apply {
+    rootProject.file("keystore.properties").takeIf { it.exists() }
+        ?.inputStream()?.use { load(it) }
+}
+
+fun signingValue(env: String, property: String): String? =
+    System.getenv(env) ?: keystoreProperties.getProperty(property)
+
+val keystorePath: String? = signingValue("KEYSTORE_FILE", "storeFile")
+
+/**
+ * The release version comes from the tag that triggered the build: v1.2.3.
+ *
+ * versionCode is derived from it rather than counted, so it is reproducible:
+ * rebuilding a tag gives the same number, and the ordering Android needs for
+ * upgrades falls out of semver. Minor and patch get two digits each.
+ */
+val releaseVersion: String? = System.getenv("GITHUB_REF_NAME")
+    ?.takeIf { Regex("""^v\d+\.\d+\.\d+$""").matches(it) }
+    ?.removePrefix("v")
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -13,13 +41,39 @@ android {
         applicationId = "de.kettenblatt"
         minSdk = 34
         targetSdk = 36
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = releaseVersion
+            ?.split(".")
+            ?.let { (major, minor, patch) ->
+                major.toInt() * 10_000 + minor.toInt() * 100 + patch.toInt()
+            }
+            ?: 1
+        versionName = releaseVersion ?: "dev"
+    }
+
+    signingConfigs {
+        create("release") {
+            if (keystorePath != null) {
+                storeFile = file(keystorePath)
+                storePassword = signingValue("KEYSTORE_PASSWORD", "storePassword")
+                keyAlias = signingValue("KEY_ALIAS", "keyAlias")
+                keyPassword = signingValue("KEY_PASSWORD", "keyPassword")
+            }
+        }
     }
 
     buildTypes {
         release {
-            isMinifyEnabled = false
+            // Not optional here. material-icons-extended compiles some five
+            // thousand icons into code and the app uses 28 of them, which is
+            // most of a 46 MB APK. Shrinking takes it to a size worth asking
+            // someone to download over mobile data.
+            isMinifyEnabled = true
+            isShrinkResources = true
+            proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")
+
+            // Assigning a config with no keystore fails at packaging time, so an
+            // unsigned release stays possible for anyone without the key.
+            signingConfig = keystorePath?.let { signingConfigs.getByName("release") }
         }
     }
 

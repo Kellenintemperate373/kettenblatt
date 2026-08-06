@@ -335,6 +335,64 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 Kettenblatt appears in the share sheet and as a handler for `.gpx`, `.navi.json`
 and `.mbtiles`, so a route or a map pack can also be shared in from elsewhere.
 
+## Releases
+
+Tagging is the whole process:
+
+```sh
+git tag v1.0.0 && git push origin v1.0.0
+```
+
+That runs the tests, builds a signed APK, and publishes a GitHub Release with
+generated notes. `versionName` comes from the tag and `versionCode` is derived
+from it (`1.2.3` becomes `10203`), so rebuilding a tag produces the same numbers
+and upgrade ordering falls out of semver rather than a counter.
+
+**Releases are shrunk with R8, and that is not optional.** `material-icons-extended`
+compiles some five thousand icons into code and the app uses 28 of them: the
+unshrunk APK is 46 MB, the shrunk one 3.5 MB. `app/proguard-rules.pro` keeps
+osmdroid whole, since it names tile sources by class and reads configuration
+reflectively, and keeps the generated `kotlinx.serialization` serializers, which
+are looked up by name. Anything else stripped in error surfaces only at runtime,
+so a release build is worth installing and exercising before tagging — import,
+prepare, ride, stop, history.
+
+### One-time signing setup
+
+Android ties app identity to the signing key, so a build signed with a different
+key cannot upgrade an installed one — users would have to uninstall and lose
+their routes and rides. Create the key once, keep it safe, and never rotate it.
+
+```sh
+keytool -genkeypair -v -keystore kettenblatt.jks -alias kettenblatt \
+  -keyalg RSA -keysize 4096 -validity 10000
+```
+
+Then store it for CI, base64-encoded because a secret has to be text:
+
+```sh
+gh secret set KEYSTORE_BASE64  < <(base64 -i kettenblatt.jks)
+gh secret set KEYSTORE_PASSWORD
+gh secret set KEY_ALIAS         # kettenblatt
+gh secret set KEY_PASSWORD
+```
+
+Keep `kettenblatt.jks` somewhere durable and out of the repo — losing it means
+never being able to update the app for anyone who installed it.
+
+To build a signed APK locally, put the same four values in `keystore.properties`
+at the repo root (gitignored):
+
+```properties
+storeFile=/absolute/path/to/kettenblatt.jks
+storePassword=…
+keyAlias=kettenblatt
+keyPassword=…
+```
+
+Without it, `./gradlew :app:assembleRelease` still works and simply produces an
+unsigned APK, so a clone can be built by anyone.
+
 ## Tests
 
 ```sh
