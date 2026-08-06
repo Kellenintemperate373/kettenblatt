@@ -368,13 +368,22 @@ keytool -genkeypair -v -keystore kettenblatt.jks -alias kettenblatt \
   -keyalg RSA -keysize 4096 -validity 10000
 ```
 
+`keytool` asks for **one** password. Two secrets exist because a keystore is a
+container that can hold several keys, and the older JKS format let each key carry
+its own password; Gradle's API still separates them. The modern default format is
+PKCS12, which has no per-key password at all — pass a different one and keytool
+answers *"Different store and key passwords not supported for PKCS12 KeyStores.
+Ignoring user-specified -keypass value."* So `KEYSTORE_PASSWORD` and
+`KEY_PASSWORD` are the same string, the one you typed. If keytool offers a key
+password prompt, press RETURN to reuse the keystore password.
+
 Then store it for CI, base64-encoded because a secret has to be text:
 
 ```sh
 gh secret set KEYSTORE_BASE64  < <(base64 -i kettenblatt.jks)
-gh secret set KEYSTORE_PASSWORD
-gh secret set KEY_ALIAS         # kettenblatt
-gh secret set KEY_PASSWORD
+gh secret set KEYSTORE_PASSWORD   # the password keytool asked for
+gh secret set KEY_PASSWORD        # the same one again
+gh secret set KEY_ALIAS           # kettenblatt
 ```
 
 Keep `kettenblatt.jks` somewhere durable and out of the repo — losing it means
