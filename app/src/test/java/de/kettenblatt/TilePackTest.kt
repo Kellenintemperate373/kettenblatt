@@ -13,11 +13,11 @@ import org.junit.Test
 import org.kxml2.io.KXmlParser
 
 /**
- * Tile selection, against the numbers `tools/navi/tiles.py` produces.
+ * Tile selection, against numbers verified against the Python original.
  *
- * A pack built on the phone has to cover exactly the ground the desktop one
- * did -- a corridor one tile narrower is a blank strip beside the route,
- * discovered in a field with no signal.
+ * The corridor has to cover exactly the ground the route runs through -- one
+ * tile narrower is a blank strip beside the line, discovered in a field with no
+ * signal.
  */
 class TilePackTest {
 

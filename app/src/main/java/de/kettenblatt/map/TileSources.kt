@@ -15,7 +15,7 @@ import java.io.File
  * Note what is deliberately *absent*: any in-app bulk download. osmdroid's
  * Mapnik source carries `FLAG_NO_BULK`, so constructing a `CacheManager`
  * against it throws -- osmdroid enforcing the OSM Foundation's tile policy. Tile
- * packs are built by `prep/TilePack.kt` or `tools/prep.py --tiles` instead, from a
+ * packs are built by `prep/TilePack.kt` instead, from a
  * source that permits it. Browsing the map online still caches normally.
  */
 object TileSources {

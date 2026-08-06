@@ -20,8 +20,7 @@ import java.util.zip.GZIPInputStream
 /**
  * Client for a Valhalla instance -- the one thing the app cannot do for itself.
  *
- * Mirrors `tools/navi/valhalla.py`, request for request, so a route prepared on
- * the phone is the same bundle `prep.py` writes. Two endpoints matter:
+ * Two endpoints matter:
  *
  * * `trace_route` returns route directions for the matched track, which is where
  *   turn maneuvers and street names come from.

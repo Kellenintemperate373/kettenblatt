@@ -8,12 +8,7 @@ import kotlin.math.hypot
 import kotlin.math.sin
 import kotlin.math.sqrt
 
-/**
- * Geodesic helpers. Distances are metres, bearings degrees clockwise from north.
- *
- * Mirrors `tools/navi/geo.py` so the preprocessing step and the app agree about
- * where a point sits on a track.
- */
+/** Geodesic helpers. Distances are metres, bearings degrees clockwise from north. */
 object Geo {
     const val EARTH_RADIUS_M = 6_371_000.0
 
@@ -56,7 +51,7 @@ data class NearestPoint(val index: Int, val distanceM: Double)
  * Restricting the range is what keeps a route that doubles back on itself from
  * binding a later feature to an earlier, coincident part of the track -- the
  * reference route revisits 47 coordinates, so an unrestricted search regularly
- * picks the wrong leg. Mirrors `nearest_point_index` in `tools/navi/geo.py`.
+ * picks the wrong leg.
  */
 fun <T> nearestPointIndex(
     points: List<T>,

@@ -20,11 +20,12 @@ import java.util.zip.GZIPInputStream
 /**
  * The Kotlin preparation pipeline against the Python one, on identical input.
  *
- * `tools/tests/fixtures/venlo_trace_*.json.gz` are real recorded Valhalla
- * responses, and `venlo_expected.json` is what `tools/navi/maneuvers.py`
- * produces from them. Holding the port to that file means tileset drift on the
- * live service cannot be mistaken for a porting bug, and any divergence points
- * at a specific maneuver or span rather than at "the output looks different".
+ * `venlo_trace_*.json.gz` are real recorded Valhalla responses, and
+ * `venlo_expected.json` is the output that was verified against the Python
+ * reference implementation this code was ported from. Holding the port to a
+ * fixed file means tileset drift on the live service cannot be mistaken for a
+ * regression, and any divergence points at a specific maneuver or span rather
+ * than at "the output looks different".
  */
 class ManeuverPortTest {
 

@@ -36,10 +36,8 @@ planner. Komoot is a trademark of komoot GmbH.
       └─► Offline map ──► 431 tiles, 9 MB  ─────────────►    entirely offline
 ```
 
-Everything above happens on the phone. `tools/prep.py` still exists and produces
-byte-identical output — it is the faster way to do a folder of routes at once,
-and its recorded fixtures are what the app's tests are held to — but nothing
-requires it any more.
+Everything above happens on the phone. There is no desktop step, no Docker, and
+nothing to install but the app.
 
 ## Why map matching exists
 
@@ -71,7 +69,8 @@ Import a `.gpx` and the preview offers **Add turn cues**. That sends the track t
 Valhalla, maps the returned maneuvers back onto the original geometry, matches the
 reverse direction too, and rewrites the route in place. On the reference route it
 takes about a second and yields the same 70 turns, 67 reverse cues and 82 surface
-spans that `prep.py` produces — verified by diffing the two files.
+spans that the original desktop pipeline produced — verified by diffing the two
+files before that pipeline was retired.
 
 ![Preparing a route on the phone](docs/screens/prepare-on-phone.png)
 
@@ -93,66 +92,14 @@ changing the URL.
 
 ## Setup
 
-Install the app and you are done — the rest of this section is the desktop path,
-which is now optional.
+Install the app. That is the whole setup.
 
-### Valhalla in Docker (optional)
-
-```sh
-docker compose -f tools/docker-compose.yml up -d
-```
-
-First run downloads the Geofabrik extract and builds a routing graph (a few
-minutes). Edit `tile_urls` in `tools/docker-compose.yml` for your riding area —
-it defaults to Dutch Limburg (95 MB). Set `use_tiles_ignore_pbf: "True"` after
-the first successful build to skip rebuilding on restart.
-
-`prep.py` also takes `--valhalla https://valhalla1.openstreetmap.de`, which skips
-Docker entirely and matches against the same public instance the app uses.
-
-### Preparing routes in batches
-
-```sh
-python3 tools/prep.py "routes/My Tour.gpx" --out build/
-```
-
-Point it at a **folder** to prepare everything in one go. Routes whose bundle is
-already newer than the GPX are skipped, so this is cheap to re-run:
-
-```sh
-python3 tools/prep.py routes/ --out build/          # only new arrivals
-python3 tools/prep.py routes/ --out build/ --force  # redo everything
-```
-
-Add `--tiles` for an offline map pack:
-
-```sh
-python3 tools/prep.py "routes/My Tour.gpx" --out build/ --tiles --tile-zoom 12-16
-```
-
-Tile downloads **resume**: rerun the same command after an interruption and only
-the missing tiles are fetched. Switching `--tile-source` discards the old pack
-rather than mixing two styles into one map.
-
-Useful flags:
-
-| Flag | Purpose |
-|---|---|
-| `--no-match` | Skip Valhalla entirely; geometry-only bundle |
-| `--tile-source` | `opentopomap` (default, no key), `thunderforest-outdoors`, `thunderforest-cycle` |
-| `--tile-buffer` | Corridor half-width in metres (default 500) |
-| `--tile-api-key` | For Thunderforest |
-| `-y` | Skip the tile download confirmation |
-
-Every run prints a match-quality summary, and matches **both directions**:
-
-```
-matched 530/606 (76 interpolated, 0 unmatched) via bicycle;
-offset mean 0.8 m max 89.1 m; length 29.02 km vs 28.83 km (+0.7%)
-70 turn cues, 80 surface spans
-matching the reverse direction...
-67 reverse turn cues
-```
+Matching uses [FOSSGIS's public Valhalla](https://valhalla.openstreetmap.de) by
+default. If you would rather not depend on a shared instance, run your own —
+[the project's Docker image](https://github.com/nilsnolde/docker-valhalla) with a
+[Geofabrik extract](https://download.geofabrik.de/) for your region — and put its
+address in Settings. The app speaks the standard `trace_route` and
+`trace_attributes` API, so any Valhalla will do.
 
 ### Why both directions are matched, not flipped
 
@@ -174,8 +121,8 @@ why preparing a route costs four requests rather than two.
 adb install -r app/build/outputs/apk/debug/app-debug.apk
 ```
 
-Kettenblatt appears in the share sheet and as a handler for `.gpx`, `.navi.json` and
-`.mbtiles`, so a bundle prepared on the desktop still transfers as before.
+Kettenblatt appears in the share sheet and as a handler for `.gpx`, `.navi.json`
+and `.mbtiles`, so a route or a map pack can also be shared in from elsewhere.
 
 ## Managing routes
 
@@ -399,29 +346,28 @@ navigation mode becomes zoomed-in north-up.
 ## Tests
 
 ```sh
-cd tools && python3 -m pytest tests/ -q    # 83 tests, preprocessing
-./gradlew :app:testDebugUnitTest           # 163 tests, app logic
+./gradlew :app:testDebugUnitTest    # 173 tests
 ```
 
-Both suites run against the real Komoot export rather than synthetic data.
+They run against the real reference route rather than synthetic data.
 
-**The Kotlin preparation pipeline is held to the Python one's output.**
-`tools/tests/fixtures/venlo_trace_{route,attributes}.json.gz` are real recorded
-Valhalla responses; `venlo_expected.json` is what `tools/navi/maneuvers.py`
-produces from them. The port is tested by feeding it those exact bytes and
-asserting it reproduces all 70 cues at the same indices with the same street
-names and instructions, all 80 spans, and the same match quality. Tileset drift
-on the live service therefore cannot be mistaken for a porting bug, and a
-divergence names the maneuver that broke. The tile maths is pinned the same way,
-against the corridor and bbox counts `tiles.py` computes at each zoom.
+**Preparation is pinned to recorded responses.**
+`app/src/test/resources/venlo_trace_{route,attributes}.json.gz` are real Valhalla
+replies; `venlo_expected.json` is the cue and span output verified against the
+Python implementation this code was ported from. Feeding the port those exact
+bytes and asserting it still reproduces all 70 cues at the same indices with the
+same street names, all 80 spans and the same match quality means tileset drift on
+the live service can never be mistaken for a regression, and a divergence names
+the maneuver that broke. Tile selection is pinned the same way, against the
+corridor and bbox counts at each zoom.
 
 The GPX export is tested by importing it straight back through the app's own
 `GpxImport` — which needs a real `XmlPullParser`, since `android.util.Xml` is a
 stub off-device. `GpxImport.parse` takes one as an optional argument for exactly
 that reason, and the tests pass kxml2.
 
-The whole flow has also been exercised on an emulator: importing a raw Komoot
-`.gpx`, preparing it **on the phone**, riding it with simulated GPS (`adb emu geo
+The whole flow has also been exercised on an emulator: importing a raw `.gpx`,
+preparing it **on the phone**, riding it with simulated GPS (`adb emu geo
 fix` fed from the route's own points), watching the turn banner advance through
 real street names, drifting off route to raise the alert, approaching a waypoint
 and an unpaved span for their chips, killing the app mid-ride and resuming it,
@@ -430,7 +376,8 @@ pack and rendering from it in **airplane mode**, and preparing a 7,209-point
 recording to exercise trace thinning.
 
 The strongest check: the bundle the phone produced was pulled off the device and
-diffed against the one `prep.py` wrote from the same GPX. Identical geometry,
+diffed against the one the desktop pipeline wrote from the same GPX. Identical
+geometry,
 identical 70 forward and 67 reverse cues down to each instruction string,
 identical 82 surface spans, identical match quality.
 
@@ -475,8 +422,8 @@ treats audio and haptics as best-effort for the same reason.
 
 **Tile packs are built on the desktop, not in the app.** osmdroid's Mapnik source
 carries `FLAG_NO_BULK`, so constructing a `CacheManager` against it throws — the
-library enforcing the OSM Foundation's tile policy. `tools/prep.py --tiles` uses a
-source that permits caching instead.
+library enforcing the OSM Foundation's tile policy. `prep/TilePack.kt` fetches
+from a source that permits caching instead, and writes the MBTiles itself.
 
 **MBTiles carries no tile-source name**, so `IArchiveFile.getTileSources()` returns
 an empty set and the name has to be supplied in code.
@@ -505,7 +452,7 @@ track then reads as permanently off route. Prune on every improvement.
 export as "text/html". Harmless-looking until it matters twice over: the activity
 picks the costing model, so a hike would have been matched with bicycle costing,
 and it picks the ETA default, so a walk was estimated at 16 km/h. Scope the tag to
-`<trk>`, as `tools/navi/gpx.py` always did.
+`<trk>`.
 
 **Never trade working guidance for none.** Matching is best-effort — a route with
 no cues is still worth importing on geometry alone. But applying that same rule to
@@ -555,24 +502,20 @@ a synthetic climb). Neither alone is enough.
 ## Layout
 
 ```
-tools/                 preprocessing (stdlib Python + pytest only)
-  docker-compose.yml   Valhalla
-  prep.py              CLI
-  navi/                gpx, geo, elevation, valhalla, maneuvers, tiles, bundle, pipeline
 app/src/main/java/de/kettenblatt/
   data/                bundle + gpx parsing, route storage, rides, settings, gpx export
-  geo/                 mirrors tools/navi/geo.py
-  prep/                mirrors tools/navi/: valhalla, maneuvers, pipeline, bundle, tiles
+  geo/                 haversine, bearings, local-plane projection
+  prep/                valhalla client, maneuvers, pipeline, bundle writer, tiles
   nav/                 RouteTracker (pure Kotlin), foreground service, recorder, alerts
   map/                 osmdroid wrapper, tile sources
   ui/                  Compose screens (list, preview, navigation, rides, settings)
 docs/screens/          screenshots used by this README
 ```
 
-`prep/` is a deliberate mirror of `tools/navi/`, file for file and constant for
-constant, because the two have to agree: a route prepared on the phone and one
-prepared on the desktop must be the same bundle. Where the Python has a comment
-explaining why a number is what it is, the Kotlin carries the same one.
+`prep/` is a port of a Python pipeline that used to run on a desktop, and it
+keeps that origin's habit of writing down *why* each constant is what it is —
+`search_radius`, the maneuver types that are deliberately ignored, the length
+deviation that makes a match unusable. Those numbers were expensive to find.
 
 Anything worth testing lives in a class with no Android imports —
 `RouteTracker`, `Ride`, `RideStore`, `SettingsCodec`, `RouteIndex`, `GpxExport` —

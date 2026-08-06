@@ -26,11 +26,9 @@ data class Prepared(
 }
 
 /**
- * Komoot GPX in, navigation bundle out -- the job `tools/prep.py` does, on the
- * phone.
+ * GPX in, navigation bundle out.
  *
- * Ported from `tools/navi/pipeline.py`, including its most important property:
- * **map matching is best-effort**. If Valhalla is unreachable, or matches the
+ * The most important property here is that **map matching is best-effort**. If Valhalla is unreachable, or matches the
  * track badly, a route still comes out -- just without turn cues and street
  * names. The app treats those as optional, so a degraded route is still a
  * usable one rather than a failure, which matters when the wifi drops halfway

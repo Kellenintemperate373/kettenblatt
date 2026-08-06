@@ -15,8 +15,7 @@ import kotlin.math.abs
 /**
  * Turns Valhalla's map-matching output into annotations on the original track.
  *
- * Mirrors `tools/navi/maneuvers.py`. Everything here maps *back onto the Komoot
- * points*: the original geometry stays authoritative for navigation, so a poor
+ * Everything here maps *back onto the imported track's own points*: the original geometry stays authoritative for navigation, so a poor
  * match costs street names rather than corrupting the line being followed.
  *
  * The mapping is not a plain nearest-neighbour lookup. The reference route is a

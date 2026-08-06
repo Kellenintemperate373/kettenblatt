@@ -8,11 +8,10 @@ import kotlinx.serialization.json.Json
 /**
  * A route ready to navigate.
  *
- * Built either from a `.navi.json` bundle -- prepared on the phone or by
- * `tools/prep.py`, which
- * carries turn cues, street names and surface -- or straight from a `.gpx`, which
- * carries geometry only. The navigation engine treats the extras as optional, so
- * a plain GPX imported in the field still works, just without a turn banner.
+ * Built either from a `.navi.json` bundle, which carries turn cues, street
+ * names and surface, or straight from a `.gpx`, which carries geometry only.
+ * The navigation engine treats the extras as optional, so a plain GPX imported
+ * in the field still works, just without a turn banner.
  */
 data class Route(
     val name: String,
@@ -267,10 +266,9 @@ object BundleReader {
 // --- shared precomputation -----------------------------------------------
 
 /**
- * The same elevation treatment `tools/navi/elevation.py` applies, for routes
- * imported as plain GPX. Constants are kept in step with that module: without
- * both the smoothing window and the threshold, summing raw deltas overstates
- * ascent badly (68 m against ~44 m on the reference route).
+ * Elevation treatment for routes imported as plain GPX. Without both the
+ * smoothing window and the threshold, summing raw deltas overstates ascent
+ * badly (68 m against ~44 m on the reference route).
  */
 object RouteMath {
     const val SMOOTHING_WINDOW_M = 60.0

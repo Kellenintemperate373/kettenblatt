@@ -18,7 +18,7 @@ import kotlin.math.round
 /**
  * Writes the `.navi.json` bundle, the mirror of `data/Route.kt`'s reader.
  *
- * Ported from `tools/navi/bundle.py`, rounding included: coordinates to 6
+ * Rounding is deliberate: coordinates to 6
  * decimal places (~0.1 m) and distances to 0.1 m. Full float repr roughly
  * doubles the file for precision no GPS can use, and the file still gets
  * written to a phone's storage on every prepare.

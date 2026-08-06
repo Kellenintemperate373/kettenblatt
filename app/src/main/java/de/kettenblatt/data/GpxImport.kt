@@ -11,7 +11,7 @@ import java.io.InputStream
  * This is the degraded path: geometry, elevation and waypoints, but no turn
  * cues or street names, because Komoot's export contains none -- deriving them
  * from geometry alone would fire an alert at every bend in the road. Run the
- * route through Add turn cues, or `tools/prep.py`, to get guidance.
+ * route through Add turn cues to get guidance.
  *
  * Tags are matched on local name, so GPX 1.0, 1.1 and any namespace prefix all
  * parse without special-casing.

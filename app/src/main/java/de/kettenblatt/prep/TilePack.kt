@@ -84,10 +84,10 @@ data class TilePlan(
 data class TileProgress(val done: Int, val total: Int, val unavailable: Int)
 
 /**
- * Builds an offline map pack on the phone, the job `tools/navi/tiles.py` does.
+ * Builds an offline map pack on the phone.
  *
- * The output is the same MBTiles file the app already reads, so a pack built
- * here and one sideloaded from the Mac are indistinguishable.
+ * The output is a standard MBTiles file, so a pack built here and one built by
+ * any other tool are indistinguishable to the map.
  */
 object TilePack {
 

@@ -24,9 +24,9 @@ import java.util.zip.GZIPInputStream
  * Writing a bundle, and reading it straight back.
  *
  * The end-to-end case builds a bundle the way the app will -- GPX plus recorded
- * Valhalla responses -- and checks it against the one `tools/prep.py` wrote from
- * the same inputs, which is the real question: would a route prepared on the
- * phone navigate identically to one prepared on the Mac?
+ * Valhalla responses -- and checks it against a bundle known to navigate
+ * correctly, which is the real question: does a route prepared today still come
+ * out the same as one prepared before the last change?
  */
 class BundleWriterTest {
 
