@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <color name="ic_launcher_background">#1D6FF2</color>
-    <color name="launch_background">#F7F8FA</color>
+    <color name="ic_launcher_background">#F7F5F1</color>
+    <!-- Matches the icon background, so the system splash shows no disc edge. -->
+    <color name="launch_background">#F7F5F1</color>
 </resources>

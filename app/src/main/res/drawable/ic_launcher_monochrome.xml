@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="utf-8"?>
-<!-- The Kettenblatt mark: a chainring, drawn in code in the same spirit as
+<!-- The Kettenblatt mark for themed icons: the same chainring, drawn in code in the same spirit as
      map/Markers.kt. Five circles and two rings, no bitmap.
 
      Geometry is the design spec's 100-unit viewport scaled by 0.68 into the
@@ -27,9 +27,4 @@
         android:pathData="M26.120,54.000 a27.880,27.880 0 1,0 55.760,0 a27.880,27.880 0 1,0 -55.760,0 Z M48.288,36.660 a5.712,5.712 0 1,0 11.424,0 a5.712,5.712 0 1,0 -11.424,0 Z M64.812,48.628 a5.712,5.712 0 1,0 11.424,0 a5.712,5.712 0 1,0 -11.424,0 Z M58.488,68.076 a5.712,5.712 0 1,0 11.424,0 a5.712,5.712 0 1,0 -11.424,0 Z M38.088,68.076 a5.712,5.712 0 1,0 11.424,0 a5.712,5.712 0 1,0 -11.424,0 Z M31.764,48.628 a5.712,5.712 0 1,0 11.424,0 a5.712,5.712 0 1,0 -11.424,0 Z M46.860,54.000 a7.140,7.140 0 1,0 14.280,0 a7.140,7.140 0 1,0 -14.280,0 Z"
         android:fillColor="#17191C"
         android:fillType="evenOdd" />
-
-    <!-- Bore pin, the one spot of route blue. App icon only. -->
-    <path
-        android:pathData="M50.872,54.000 a3.128,3.128 0 1,0 6.256,0 a3.128,3.128 0 1,0 -6.256,0 Z"
-        android:fillColor="#1D6FF2" />
 </vector>
