@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">Kettenblatt</string>
+
+    <string name="routes_title">Routes</string>
+    <string name="import_route">Import route</string>
+    <string name="no_routes">No routes yet</string>
+    <string name="no_routes_hint">Import a Komoot GPX. Turn cues, street names and an offline map are added here, over wifi.</string>
+    <string name="delete">Delete</string>
+    <string name="cancel">Cancel</string>
+
+    <string name="stop_navigation">Stop</string>
+    <string name="recenter">Recentre</string>
+    <string name="off_route">Off route</string>
+    <string name="back_to_route">Back to route</string>
+    <string name="wrong_direction">Wrong direction</string>
+    <string name="arrived">Arrived</string>
+    <string name="remaining">Remaining</string>
+    <string name="ascent">Ascent</string>
+    <string name="speed">Speed</string>
+    <string name="eta">ETA</string>
+    <string name="waiting_for_gps">Waiting for GPS…</string>
+
+    <string name="notification_channel_name">Navigation</string>
+    <string name="notification_channel_description">Shows progress while following a route</string>
+    <string name="location_permission_required">Location permission is required to navigate</string>
+    <string name="grant_permission">Grant permission</string>
+
+    <string name="offline_map_attached">Offline map attached</string>
+    <string name="no_guidance">Geometry only — no turn cues</string>
+</resources>

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- A winding route with a position marker on it. Drawn inside the 72dp safe
+     zone of the 108dp adaptive-icon canvas so nothing is clipped by any mask. -->
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="108dp"
+    android:height="108dp"
+    android:viewportWidth="108"
+    android:viewportHeight="108">
+
+    <path
+        android:pathData="M32,80 C32,62 52,64 52,48 C52,34 40,34 40,26"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round"
+        android:strokeLineJoin="round" />
+
+    <path
+        android:pathData="M32,80 L72,80"
+        android:strokeColor="#FFFFFF"
+        android:strokeWidth="7"
+        android:strokeLineCap="round" />
+
+    <!-- Position marker at the head of the route. -->
+    <path
+        android:pathData="M40,26 m-9,0 a9,9 0 1,0 18,0 a9,9 0 1,0 -18,0"
+        android:fillColor="#FFD54F" />
+
+    <path
+        android:pathData="M72,80 m-5,0 a5,5 0 1,0 10,0 a5,5 0 1,0 -10,0"
+        android:fillColor="#FFFFFF" />
+</vector>
